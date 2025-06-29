@@ -1,0 +1,41 @@
+name: Test Trending Fetcher
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'package*.json'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Run tests
+        run: npm test
+        
+      - name: Test data fetching
+        run: |
+          echo "## 🧪 测试报告" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "测试数据获取功能..." >> $GITHUB_STEP_SUMMARY
+          if npm test; then
+            echo "✅ **测试通过**: 数据获取功能正常" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **测试失败**: 数据获取功能异常" >> $GITHUB_STEP_SUMMARY
+          fi

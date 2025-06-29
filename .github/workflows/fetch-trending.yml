@@ -1,0 +1,62 @@
+name: GitHub Trending to Wiki
+
+on:
+  schedule:
+    # 每天 UTC 00:00 运行 (北京时间 08:00)
+    - cron: '0 0 * * *'
+  
+  workflow_dispatch:
+    # 允许手动触发
+    
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - '.github/workflows/**'
+
+jobs:
+  fetch-and-publish:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Fetch trending and publish to wiki
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npm run fetch-trending
+        
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## 📊 GitHub Trending 更新报告" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **执行时间**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **仓库**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **触发方式**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ $? -eq 0 ]; then
+            echo "✅ **状态**: 成功" >> $GITHUB_STEP_SUMMARY
+            echo "📄 **Wiki 链接**: https://github.com/${{ github.repository }}/wiki" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **状态**: 失败" >> $GITHUB_STEP_SUMMARY
+          fi

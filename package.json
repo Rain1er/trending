@@ -1,0 +1,19 @@
+{
+  "name": "github-trending-to-wiki",
+  "version": "1.0.0",
+  "description": "Fetch GitHub trending repositories and publish to wiki",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "fetch-trending": "node src/fetch-and-publish.js",
+    "test": "node src/test.js"
+  },
+  "keywords": ["github", "trending", "wiki", "automation"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "@octokit/rest": "^20.0.0"
+  }
+}
