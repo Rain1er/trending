@@ -24,7 +24,9 @@ class GitHubTrendingWikiPublisher {
     return {
       dateString: `${year}年${month}月${day}日`,
       wikiPageName: `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
-      isoDate: now.toISOString().split('T')[0]
+      isoDate: now.toISOString().split('T')[0],
+      // 添加日期前缀，格式为 YYYY-M（不补零）
+      monthPrefix: `${year}-${month}`
     };
   }
 
@@ -131,7 +133,9 @@ class GitHubTrendingWikiPublisher {
     try {
       console.log(`📝 正在发布到 Wiki: ${pageTitle}`);
       
+      const dateInfo = this.getDateInfo();
       const fileName = `${pageTitle}.md`;
+      const wikiPath = `wiki/${dateInfo.monthPrefix}/${fileName}`;
       
       // 检查文件是否已存在
       let sha = null;
@@ -139,25 +143,25 @@ class GitHubTrendingWikiPublisher {
         const existingFile = await this.octokit.repos.getContent({
           owner: this.owner,
           repo: this.repo,
-          path: `wiki/${fileName}`,
+          path: wikiPath,
         });
         sha = existingFile.data.sha;
       } catch (error) {
         // 文件不存在，稍后创建新文件
       }
 
-      // 创建或更新文件到 wiki/ 目录
+      // 创建或更新文件到 wiki/YYYY-M/ 目录
       const response = await this.octokit.repos.createOrUpdateFileContents({
         owner: this.owner,
         repo: this.repo,
-        path: `wiki/${fileName}`,
+        path: wikiPath,
         message: `${sha ? 'Update' : 'Create'} ${pageTitle} - ${new Date().toISOString()}`,
         content: Buffer.from(content).toString('base64'),
         ...(sha && { sha })
       });
 
       console.log(`✅ Wiki 页面发布成功: ${pageTitle}`);
-      console.log(`🔗 文件位置: https://github.com/${this.owner}/${this.repo}/blob/main/wiki/${fileName}`);
+      console.log(`🔗 文件位置: https://github.com/${this.owner}/${this.repo}/blob/main/${wikiPath}`);
       return true;
       
     } catch (error) {
@@ -172,7 +176,8 @@ class GitHubTrendingWikiPublisher {
 
   async saveToLocalFile(content, title) {
     try {
-      const outputDir = 'output';
+      const dateInfo = this.getDateInfo();
+      const outputDir = path.join('output', dateInfo.monthPrefix);
       const fileName = `${title}.md`;
       const filePath = path.join(outputDir, fileName);
       
@@ -253,7 +258,7 @@ class GitHubTrendingWikiPublisher {
         if (process.env.GITHUB_TOKEN && this.owner !== 'local-user') {
           console.log(`📄 查看结果: https://github.com/${this.owner}/${this.repo}/tree/main/wiki`);
         } else {
-          console.log(`📄 本地文件已生成，请查看 output/ 目录`);
+          console.log(`📄 本地文件已生成，请查看 output/${dateInfo.monthPrefix}/ 目录`);
         }
       } else {
         throw new Error('发布失败');

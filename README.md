@@ -5,7 +5,7 @@
 ## 功能特性
 
 - 📊 每日自动抓取 [GitHub Trending](https://github.com/trending) 热门项目
-- 📝 自动发布到项目仓库的 `wiki/` 目录，格式化为美观的 Markdown 表格
+- 📝 自动发布到项目仓库的 `wiki/YYYY-M/` 目录，格式化为美观的 Markdown 表格
 - ⏰ 支持定时任务（每天北京时间 08:00）
 - 🔧 支持手动触发执行
 - 📋 包含项目排名、名称、语言、Stars、Forks、今日新增等信息
@@ -71,11 +71,28 @@ npm run fetch-trending
 │       └── fetch-trending.yml     # GitHub Actions 工作流
 ├── src/
 │   └── fetch-and-publish.js       # GitHub Actions 发布脚本
+├── output/                        # 本地生成的文件目录
+│   └── YYYY-M/                    # 按年月分组的输出文件
+│       └── YYYY-MM-DD.md          # 每日 trending 数据
+├── wiki/                          # GitHub 仓库 wiki 目录
+│   └── YYYY-M/                    # 按年月分组的 wiki 页面
+│       └── YYYY-MM-DD.md          # 每日 trending 数据
 ├── package.json
 └── README.md
 ```
 
 ## 自定义配置
+
+### 输出目录结构
+
+项目现在按照年月进行分组：
+- 本地文件保存到：`output/2025-6/2025-06-29.md`
+- GitHub wiki 发布到：`wiki/2025-6/2025-06-29.md`
+
+这样的结构有助于：
+- 📂 更好地组织历史数据
+- 🔍 快速定位特定月份的数据
+- 📊 便于按月份进行数据分析
 
 ### 修改执行时间
 
