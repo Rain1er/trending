@@ -51,21 +51,21 @@ Building a modern alternative to Salesforce, powered by the community.
 
 ### 安装依赖
 
-\`\`\`bash
+```bash
 npm install
-\`\`\`
+```
 
 ### 运行脚本
 
-\`\`\`bash
+```bash
 # 运行脚本（本地测试时生成本地文件，GitHub Actions 中发布到 wiki）
 npm run fetch-trending
-\`\`\`
+```
 
 
 ## 文件结构
 
-\`\`\`
+```
 ├── .github/
 │   └── workflows/
 │       └── fetch-trending.yml     # GitHub Actions 工作流
@@ -73,23 +73,23 @@ npm run fetch-trending
 │   └── fetch-and-publish.js       # GitHub Actions 发布脚本
 ├── package.json
 └── README.md
-\`\`\`
+```
 
 ## 自定义配置
 
 ### 修改执行时间
 
-编辑 \`.github/workflows/fetch-trending.yml\` 中的 cron 表达式：
+编辑 `.github/workflows/fetch-trending.yml` 中的 cron 表达式：
 
-\`\`\`yaml
+```yaml
 schedule:
   # 改为 UTC 11:00 执行，北京时间 19:00.确保能获取到最新的 trending 数据
   - cron: '0 11 * * *'
-\`\`\`
+```
 
 ### 修改输出格式
 
-编辑 \`src/fetch-and-publish.js\` 中的 \`formatAsMarkdown\` 方法来自定义输出格式。
+编辑 `src/fetch-and-publish.js` 中的 `formatAsMarkdown` 方法来自定义输出格式。
 
 
 ### 查看日志
