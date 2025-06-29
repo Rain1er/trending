@@ -1,6 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { Octokit } = require('@octokit/rest');
+const fs = require('fs');
+const path = require('path');
 
 class GitHubTrendingWikiPublisher {
   constructor() {
@@ -129,113 +131,126 @@ class GitHubTrendingWikiPublisher {
     try {
       console.log(`📝 正在发布到 Wiki: ${pageTitle}`);
       
-      // 检查仓库是否存在并且有权限
-      await this.octokit.repos.get({
-        owner: this.owner,
-        repo: this.repo
-      });
-
-      // 创建或更新 Wiki 页面
-      const wikiUrl = `https://api.github.com/repos/${this.owner}/${this.repo}/wiki/${pageTitle}`;
+      const fileName = `${pageTitle}.md`;
       
+      // 检查文件是否已存在
+      let sha = null;
       try {
-        // 尝试更新现有页面
-        await axios.put(wikiUrl, {
-          content: content,
-          message: `Update ${pageTitle} - ${new Date().toISOString()}`
-        }, {
-          headers: {
-            'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'User-Agent': 'GitHub-Trending-Bot'
-          }
+        const existingFile = await this.octokit.repos.getContent({
+          owner: this.owner,
+          repo: this.repo,
+          path: `wiki/${fileName}`,
         });
+        sha = existingFile.data.sha;
       } catch (error) {
-        if (error.response?.status === 404) {
-          // 页面不存在，创建新页面
-          await axios.post(`https://api.github.com/repos/${this.owner}/${this.repo}/wiki`, {
-            title: pageTitle,
-            content: content,
-            message: `Create ${pageTitle} - ${new Date().toISOString()}`
-          }, {
-            headers: {
-              'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-              'Accept': 'application/vnd.github.v3+json',
-              'User-Agent': 'GitHub-Trending-Bot'
-            }
-          });
-        } else {
-          throw error;
-        }
+        // 文件不存在，稍后创建新文件
       }
 
+      // 创建或更新文件到 wiki/ 目录
+      const response = await this.octokit.repos.createOrUpdateFileContents({
+        owner: this.owner,
+        repo: this.repo,
+        path: `wiki/${fileName}`,
+        message: `${sha ? 'Update' : 'Create'} ${pageTitle} - ${new Date().toISOString()}`,
+        content: Buffer.from(content).toString('base64'),
+        ...(sha && { sha })
+      });
+
       console.log(`✅ Wiki 页面发布成功: ${pageTitle}`);
+      console.log(`� 文件位置: https://github.com/${this.owner}/${this.repo}/blob/main/wiki/${fileName}`);
       return true;
+      
     } catch (error) {
       console.error(`❌ Wiki 发布失败:`, error.message);
       if (error.response) {
         console.error('Response status:', error.response.status);
         console.error('Response data:', error.response.data);
       }
-      
-      // 备用方案：使用 Gist
-      return await this.publishToGist(content, pageTitle);
+      throw error;
     }
   }
 
-  async publishToGist(content, title) {
+  async saveToLocalFile(content, title) {
     try {
-      console.log(`📝 Wiki 不可用，尝试发布到 Gist...`);
+      const outputDir = 'output';
+      const fileName = `${title}.md`;
+      const filePath = path.join(outputDir, fileName);
       
-      const response = await this.octokit.gists.create({
-        description: `GitHub Trending - ${title}`,
-        public: true,
-        files: {
-          [`${title}.md`]: {
-            content: content
-          }
-        }
-      });
-
-      console.log(`✅ Gist 创建成功: ${response.data.html_url}`);
+      // 创建输出目录
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+      
+      // 保存文件
+      fs.writeFileSync(filePath, content, 'utf8');
+      
+      console.log(`✅ 内容已保存到本地文件: ${filePath}`);
+      console.log(`📄 你可以手动将此文件内容复制到 GitHub`);
       return true;
+      
     } catch (error) {
-      console.error(`❌ Gist 发布失败:`, error.message);
+      console.error('❌ 本地文件保存失败:', error.message);
       return false;
     }
   }
 
   async updateHomePage(dateInfo) {
     try {
-      console.log('📝 正在更新 Wiki 首页...');
+      console.log('📝 正在更新首页...');
       
       const homeContent = `# GitHub Trending 热门项目\n\n` +
         `本项目自动抓取并整理 GitHub 每日热门项目，每天自动更新。\n\n` +
         `## 最新更新\n\n` +
-        `- [${dateInfo.dateString}](${dateInfo.wikiPageName}) - 最新热门项目\n\n` +
+        `- [${dateInfo.dateString}](wiki/${dateInfo.wikiPageName}.md) - 最新热门项目\n\n` +
         `## 历史记录\n\n` +
-        `- [查看所有历史记录](https://github.com/${this.owner}/${this.repo}/wiki)\n\n` +
+        `- [查看所有历史记录](wiki/)\n\n` +
         `---\n\n` +
         `*最后更新: ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}*\n` +
         `*自动更新频率: 每天 UTC 00:00 (北京时间 08:00)*\n`;
 
-      await this.publishToWiki(homeContent, 'Home');
-      console.log('✅ Wiki 首页更新成功');
+      if (process.env.GITHUB_TOKEN) {
+        await this.publishToWiki(homeContent, 'Home');
+        console.log('✅ 首页更新成功');
+      } else {
+        await this.saveToLocalFile(homeContent, 'Home');
+        console.log('✅ 首页内容已保存到本地');
+      }
     } catch (error) {
-      console.error('❌ Wiki 首页更新失败:', error.message);
+      console.error('❌ 首页更新失败:', error.message);
     }
   }
 
   async run() {
     console.log('🚀 开始执行 GitHub Trending 数据获取和发布任务...\n');
     
+    // 检查是否在 GitHub Actions 环境中
+    const isGitHubActions = !!process.env.GITHUB_ACTIONS;
+    
+    if (!isGitHubActions) {
+      console.log('⚠️  当前不在 GitHub Actions 环境中');
+      console.log('📝 将使用本地模式运行...\n');
+    }
+    
     // 验证环境变量
     if (!process.env.GITHUB_TOKEN) {
-      throw new Error('GITHUB_TOKEN 环境变量未设置');
+      console.log('⚠️  GITHUB_TOKEN 未设置');
+      if (isGitHubActions) {
+        console.log('📝 GitHub Actions 中没有有效 token，任务将失败\n');
+        throw new Error('在 GitHub Actions 中 GITHUB_TOKEN 是必需的');
+      } else {
+        console.log('📝 本地模式：将保存到本地文件\n');
+      }
     }
     
     if (!this.owner || !this.repo) {
-      throw new Error('GitHub 仓库信息获取失败');
+      console.log('⚠️  GitHub 仓库信息获取失败');
+      if (isGitHubActions) {
+        throw new Error('GitHub 仓库信息获取失败');
+      } else {
+        console.log('📝 本地模式：使用默认值\n');
+        this.owner = 'local-user';
+        this.repo = 'trending';
+      }
     }
     
     console.log(`📍 目标仓库: ${this.owner}/${this.repo}`);
@@ -248,22 +263,40 @@ class GitHubTrendingWikiPublisher {
       // 生成markdown内容
       const markdown = this.formatAsMarkdown(repositories, dateInfo);
       
-      // 发布到Wiki
-      const success = await this.publishToWiki(markdown, dateInfo.wikiPageName);
+      let success = false;
+      
+      // 发布逻辑
+      if (process.env.GITHUB_TOKEN && this.owner !== 'local-user') {
+        // 有 GitHub Token，发布到仓库 wiki/ 目录
+        success = await this.publishToWiki(markdown, dateInfo.wikiPageName);
+        
+        if (success) {
+          // 更新首页
+          await this.updateHomePage(dateInfo);
+        }
+      } else {
+        // 本地环境，保存到本地文件
+        success = await this.saveToLocalFile(markdown, dateInfo.wikiPageName);
+      }
       
       if (success) {
-        // 更新首页
-        await this.updateHomePage(dateInfo);
-        
         console.log('\n🎉 任务执行成功！');
-        console.log(`📄 Wiki 页面: https://github.com/${this.owner}/${this.repo}/wiki/${dateInfo.wikiPageName}`);
+        if (process.env.GITHUB_TOKEN && this.owner !== 'local-user') {
+          console.log(`📄 查看结果: https://github.com/${this.owner}/${this.repo}/tree/main/wiki`);
+        } else {
+          console.log(`📄 本地文件已生成，请查看 output/ 目录`);
+        }
       } else {
         throw new Error('发布失败');
       }
       
     } catch (error) {
       console.error('\n❌ 任务执行失败:', error.message);
-      process.exit(1);
+      if (isGitHubActions) {
+        process.exit(1);
+      } else {
+        console.log('\n💡 提示：在 GitHub Actions 中运行时将自动发布到仓库的 wiki/ 目录');
+      }
     }
   }
 }

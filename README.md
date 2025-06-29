@@ -5,11 +5,11 @@
 ## 功能特性
 
 - 📊 每日自动抓取 [GitHub Trending](https://github.com/trending) 热门项目
-- 📝 自动发布到项目 Wiki，格式化为美观的 Markdown 表格
+- 📝 自动发布到项目仓库的 `wiki/` 目录，格式化为美观的 Markdown 表格
 - ⏰ 支持定时任务（每天北京时间 08:00）
 - 🔧 支持手动触发执行
 - 📋 包含项目排名、名称、语言、Stars、Forks、今日新增等信息
-- 🏠 自动维护 Wiki 首页和历史记录
+- 🏠 自动维护首页和历史记录
 
 ## 输出格式
 
@@ -33,9 +33,9 @@ Building a modern alternative to Salesforce, powered by the community.
 
 确保在仓库设置中启用了 GitHub Actions。
 
-### 3. 启用 Wiki
+### 3. 启用功能
 
-在仓库的 Settings → Features 中启用 Wiki 功能。
+在仓库设置中启用 GitHub Actions。
 
 ### 4. 配置权限
 
@@ -106,16 +106,23 @@ schedule:
 
 ### 常见问题
 
-1. **Wiki 发布失败**
-   - 确保仓库启用了 Wiki 功能
+1. **文件发布失败**
+   - 确保仓库启用了 GitHub Actions
    - 检查 GitHub Token 权限
 
 2. **数据获取失败**
    - GitHub Trending 页面可能临时不可用
    - 网络连接问题
+   - **解决方案**: 脚本会自动重试并输出详细错误信息
 
 3. **权限错误**
-   - 确保 GitHub Actions 有 "Read and write permissions"
+   - 确保 GitHub Actions 有正确的权限：
+     - `contents: write` - 用于创建文件
+
+4. **本地测试**
+   - 本地运行时无需 GitHub Token
+   - 数据会保存到 `output/` 目录
+   - 可以手动复制内容到仓库
 
 ### 查看日志
 

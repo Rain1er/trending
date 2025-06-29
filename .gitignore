@@ -58,6 +58,8 @@ Thumbs.db
 # Build output
 dist/
 build/
+output/
 daily/
 *.md
 !README.md
+!QUICKSTART.md

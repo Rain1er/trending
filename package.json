@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "fetch-trending": "node src/fetch-and-publish.js",
-    "test": "node src/test.js"
+    "test": "node src/test.js",
+    "test-actions": "node src/github-actions-test.js"
   },
   "keywords": ["github", "trending", "wiki", "automation"],
   "author": "",
