@@ -23,7 +23,7 @@ class GitHubTrendingWikiPublisher {
     
     return {
       dateString: `${year}年${month}月${day}日`,
-      wikiPageName: `GitHub-Trending-${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
+      wikiPageName: `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
       isoDate: now.toISOString().split('T')[0]
     };
   }
@@ -157,7 +157,7 @@ class GitHubTrendingWikiPublisher {
       });
 
       console.log(`✅ Wiki 页面发布成功: ${pageTitle}`);
-      console.log(`� 文件位置: https://github.com/${this.owner}/${this.repo}/blob/main/wiki/${fileName}`);
+      console.log(`🔗 文件位置: https://github.com/${this.owner}/${this.repo}/blob/main/wiki/${fileName}`);
       return true;
       
     } catch (error) {
@@ -191,32 +191,6 @@ class GitHubTrendingWikiPublisher {
     } catch (error) {
       console.error('❌ 本地文件保存失败:', error.message);
       return false;
-    }
-  }
-
-  async updateHomePage(dateInfo) {
-    try {
-      console.log('📝 正在更新首页...');
-      
-      const homeContent = `# GitHub Trending 热门项目\n\n` +
-        `本项目自动抓取并整理 GitHub 每日热门项目，每天自动更新。\n\n` +
-        `## 最新更新\n\n` +
-        `- [${dateInfo.dateString}](wiki/${dateInfo.wikiPageName}.md) - 最新热门项目\n\n` +
-        `## 历史记录\n\n` +
-        `- [查看所有历史记录](wiki/)\n\n` +
-        `---\n\n` +
-        `*最后更新: ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}*\n` +
-        `*自动更新频率: 每天 UTC 00:00 (北京时间 08:00)*\n`;
-
-      if (process.env.GITHUB_TOKEN) {
-        await this.publishToWiki(homeContent, 'Home');
-        console.log('✅ 首页更新成功');
-      } else {
-        await this.saveToLocalFile(homeContent, 'Home');
-        console.log('✅ 首页内容已保存到本地');
-      }
-    } catch (error) {
-      console.error('❌ 首页更新失败:', error.message);
     }
   }
 
@@ -269,11 +243,6 @@ class GitHubTrendingWikiPublisher {
       if (process.env.GITHUB_TOKEN && this.owner !== 'local-user') {
         // 有 GitHub Token，发布到仓库 wiki/ 目录
         success = await this.publishToWiki(markdown, dateInfo.wikiPageName);
-        
-        if (success) {
-          // 更新首页
-          await this.updateHomePage(dateInfo);
-        }
       } else {
         // 本地环境，保存到本地文件
         success = await this.saveToLocalFile(markdown, dateInfo.wikiPageName);

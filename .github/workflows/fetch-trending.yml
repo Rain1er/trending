@@ -2,8 +2,8 @@ name: GitHub Trending to Wiki
 
 on:
   schedule:
-    # 每天 UTC 00:00 运行 (北京时间 08:00)
-    - cron: '0 0 * * *'
+    # 改为 UTC 11:00 执行，确保能获取到最新的 trending 数据
+    - cron: '0 11 * * *'  # 北京时间 19:00
   
   workflow_dispatch:
     # 允许手动触发

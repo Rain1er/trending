@@ -58,10 +58,7 @@ npm install
 ### 运行脚本
 
 \`\`\`bash
-# 本地测试（生成本地文件）
-npm start
-
-# GitHub Actions 模式（需要环境变量）
+# 运行脚本（本地测试时生成本地文件，GitHub Actions 中发布到 wiki）
 npm run fetch-trending
 \`\`\`
 
@@ -80,7 +77,6 @@ npm run fetch-trending
 │   └── workflows/
 │       └── fetch-trending.yml     # GitHub Actions 工作流
 ├── src/
-│   ├── index.js                   # 本地测试脚本
 │   └── fetch-and-publish.js       # GitHub Actions 发布脚本
 ├── package.json
 └── README.md

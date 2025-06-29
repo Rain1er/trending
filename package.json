@@ -2,12 +2,9 @@
   "name": "github-trending-to-wiki",
   "version": "1.0.0",
   "description": "Fetch GitHub trending repositories and publish to wiki",
-  "main": "src/index.js",
+  "main": "src/fetch-and-publish.js",
   "scripts": {
-    "start": "node src/index.js",
-    "fetch-trending": "node src/fetch-and-publish.js",
-    "test": "node src/test.js",
-    "test-actions": "node src/github-actions-test.js"
+    "fetch-trending": "node src/fetch-and-publish.js"
   },
   "keywords": ["github", "trending", "wiki", "automation"],
   "author": "",

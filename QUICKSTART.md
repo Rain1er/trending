@@ -24,6 +24,8 @@
 
 文件将保存在: `https://github.com/你的用户名/trending/tree/main/wiki`
 
+例如：`2025-06-29.md` 等文件
+
 ## 📊 输出示例
 
 将自动生成如下格式的内容：
@@ -47,7 +49,7 @@ Building a modern alternative to Salesforce, powered by the community.
 ### 本地测试
 ```bash
 npm install
-npm start
+npm run fetch-trending
 ```
 
 ## ❓ 问题排除
