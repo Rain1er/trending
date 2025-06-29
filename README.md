@@ -44,7 +44,7 @@ Building a modern alternative to Salesforce, powered by the community.
 
 ### 5. 运行
 
-- **自动运行**: 每天北京时间 08:00 自动执行
+- **自动运行**: 每天北京时间 19:00 自动执行
 - **手动运行**: 在 Actions 页面点击 "Run workflow" 手动触发
 
 ## 本地开发
@@ -62,13 +62,6 @@ npm install
 npm run fetch-trending
 \`\`\`
 
-### 环境变量
-
-对于 GitHub Actions 模式，需要以下环境变量：
-
-- \`GITHUB_TOKEN\`: GitHub Personal Access Token
-- \`GITHUB_REPOSITORY_OWNER\`: 仓库所有者
-- \`GITHUB_REPOSITORY_NAME\`: 仓库名称
 
 ## 文件结构
 
@@ -90,35 +83,14 @@ npm run fetch-trending
 
 \`\`\`yaml
 schedule:
-  # 每天 UTC 00:00 运行 (北京时间 08:00)
-  - cron: '0 0 * * *'
+  # 改为 UTC 11:00 执行，北京时间 19:00.确保能获取到最新的 trending 数据
+  - cron: '0 11 * * *'
 \`\`\`
 
 ### 修改输出格式
 
 编辑 \`src/fetch-and-publish.js\` 中的 \`formatAsMarkdown\` 方法来自定义输出格式。
 
-## 故障排除
-
-### 常见问题
-
-1. **文件发布失败**
-   - 确保仓库启用了 GitHub Actions
-   - 检查 GitHub Token 权限
-
-2. **数据获取失败**
-   - GitHub Trending 页面可能临时不可用
-   - 网络连接问题
-   - **解决方案**: 脚本会自动重试并输出详细错误信息
-
-3. **权限错误**
-   - 确保 GitHub Actions 有正确的权限：
-     - `contents: write` - 用于创建文件
-
-4. **本地测试**
-   - 本地运行时无需 GitHub Token
-   - 数据会保存到 `output/` 目录
-   - 可以手动复制内容到仓库
 
 ### 查看日志
 
