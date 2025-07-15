@@ -1,12 +1,12 @@
 {
-  "name": "github-trending-to-wiki",
+  "name": "github-trending-to-issues",
   "version": "1.0.0",
-  "description": "Fetch GitHub trending repositories and publish to wiki",
+  "description": "Fetch GitHub trending repositories and publish to Issues",
   "main": "src/fetch-and-publish.js",
   "scripts": {
     "fetch-trending": "node src/fetch-and-publish.js"
   },
-  "keywords": ["github", "trending", "wiki", "automation"],
+  "keywords": ["github", "trending", "issues", "automation"],
   "author": "",
   "license": "MIT",
   "dependencies": {

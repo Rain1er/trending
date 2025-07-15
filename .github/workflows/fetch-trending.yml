@@ -1,4 +1,4 @@
-name: GitHub Trending to Wiki
+name: GitHub Trending to Issues
 
 on:
   schedule:
@@ -21,6 +21,7 @@ jobs:
     
     permissions:
       contents: write
+      issues: write
     
     steps:
       - name: Checkout repository
@@ -35,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: npm install
         
-      - name: Fetch trending and publish to wiki directory
+      - name: Fetch trending and publish to Issues
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
@@ -55,7 +56,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ $? -eq 0 ]; then
             echo "✅ **状态**: 成功" >> $GITHUB_STEP_SUMMARY
-            echo "📄 **查看结果**: https://github.com/${{ github.repository }}/tree/main/wiki" >> $GITHUB_STEP_SUMMARY
+            echo "📄 **查看结果**: https://github.com/${{ github.repository }}/issues?q=label%3Agithub-trending" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **状态**: 失败" >> $GITHUB_STEP_SUMMARY
           fi
